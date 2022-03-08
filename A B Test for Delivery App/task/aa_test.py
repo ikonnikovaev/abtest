@@ -11,6 +11,7 @@ sample1 = data_aa['Sample 1']
 sample2 = data_aa['Sample 2']
 #print(sample1, sample2)
 
+# Levene's test: are the variances equal?
 W, pvalue = st.levene(sample1, sample2, center='mean')
 threshold = 0.05
 if pvalue > threshold:
@@ -28,6 +29,8 @@ print(f"Reject null hypothesis: {reject}")
 print(f"Variances are equal: {equal}")
 print()
 '''
+
+# Student's test: are the means equal?
 t, pvalue = st.ttest_ind(sample1, sample2)
 if pvalue > threshold:
     sign = '>'
@@ -43,6 +46,8 @@ print(f"t = {round(t, 3)}, p-value {sign} 0.05")
 print(f"Reject null hypothesis: {reject}")
 print(f"Means are equal: {equal}")
 '''
+
+# Power analysis
 analysis = TTestIndPower()
 result = analysis.solve_power(effect_size=0.2, nobs1=None, alpha=0.05, power=0.8, ratio=1.0)
 # print(f"Sample Size: {int(round(result, -2))}")
@@ -76,7 +81,24 @@ session_value_outliers = data_ab.loc[data_ab.session_duration >= ninety_ninth_pe
 
 data_no_outliers = data_ab.drop(index=order_value_outliers.union(session_value_outliers))
 #print(data_no_outliers.columns)
-print(f'Mean: {round(data_no_outliers.order_value.mean(), 2)}')
-print(f'Standard deviation: {round(data_no_outliers.order_value.std(ddof=0), 2)}')
-print(f'Max: {round(data_no_outliers.order_value.max(), 2)}')
+# print(f'Mean: {round(data_no_outliers.order_value.mean(), 2)}')
+# print(f'Standard deviation: {round(data_no_outliers.order_value.std(ddof=0), 2)}')
+# print(f'Max: {round(data_no_outliers.order_value.max(), 2)}')
 
+sample1 = data_no_outliers[data_no_outliers.group == 'Control'].order_value
+sample2 = data_no_outliers[data_no_outliers.group == 'Experimental'].order_value
+U1, pvalue = st.mannwhitneyu(sample1, sample2)
+
+if pvalue > threshold:
+    sign = '>'
+    reject = 'no'
+    equal = 'yes'
+else:
+    sign = '<='
+    reject = 'yes'
+    equal = 'no'
+
+print("Mann-Whitney U test")
+print(f"U1 = {round(U1, 1)}, p-value {sign} 0.05")
+print(f"Reject null hypothesis: {reject}")
+print(f"Distributions are same: {equal}")
